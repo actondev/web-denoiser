@@ -1,0 +1,54 @@
+* Getting started
+  We're gonna use =Vagrant= for our dev machine (standarize our dev environment) in which we will
+  + [ ] instal nginx
+  + [ ] install docker
+  + [ ] install git
+
+** Creating the vagrant box
+   Cause the hardest part is getting started (how do you write the =vagrantfile= ? :P) we run the following
+   #+BEGIN_SRC sh
+  vagrant init ubuntu/xenial64
+   #+END_SRC
+   This will create a template vagrantfile with =Ubuntu 16.04 LTS=
+
+   By adjusting the comments etc, we ended up with
+   #+BEGIN_SRC ruby
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/xenial64"
+  config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+  config.vm.network "private_network", ip: "192.168.33.10"
+  config.vm.synced_folder "./data", "/vagrant_data"
+  config.vm.provider "virtualbox" do |vb|
+  config.vm.provision "shell", inline: <<-SHELL
+    apt-get update
+    apt-get install -y nginx
+  SHELL
+end
+
+   #+END_SRC
+
+   Now, in our host machine we can open in browser =http://192.168.33.10/= and see the wonderful =Welcome to nginx= page :)
+
+* Installing docker
+  The goal is to put every microservice inside a docker  container.
+  Our microservices will be:
+  + Front: serving the webpage and managing the file upload
+  + redis ? : for managing the communication of the waveforms
+  + Waveform peaks generator
+  + Denoisier
+
+* Creating our waveform peaks
+  BBC to the rescue! They have the wonderful [[https://github.com/bbc/audiowaveform][audiowaveform]] repository and program
+
+  
+** Installation
+   As they note on their github
+   #+BEGIN_SRC sh
+sudo add-apt-repository ppa:chris-needham/ppa
+sudo apt-get update
+sudo apt-get install audiowaveform
+   #+END_SRC
+
