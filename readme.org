@@ -32,13 +32,87 @@ end
 
    Now, in our host machine we can open in browser =http://192.168.33.10/= and see the wonderful =Welcome to nginx= page :)
 
-* Installing docker
+* Docker
   The goal is to put every microservice inside a docker  container.
   Our microservices will be:
   + Front: serving the webpage and managing the file upload
   + redis ? : for managing the communication of the waveforms
   + Waveform peaks generator
   + Denoisier
+
+** Installing docker
+  As seen [[https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04][here]]
+  #+BEGIN_SRC sh
+# add the GPG key for the official Docker repository to the system
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+# Make sure you are about to install from the Docker repo instead of the default Ubuntu 16.04 repo:
+apt-cache policy docker-ce
+# install it
+sudo apt-get install -y docker-ce
+
+  #+END_SRC
+
+  extra: run docker commands without sudo
+  #+BEGIN_SRC sh
+sudo usermod -aG docker ${USER}
+su - ${USER}
+id -nG
+  #+END_SRC
+
+** installing docker-compose
+   #+BEGIN_SRC sh
+sudo curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+   #+END_SRC
+
+
+
+
+** Playing with docker
+   to end up with proper =RUN= instructions, first u have to test them, right?
+   SO start with a simple =Dockerfile=
+   #+BEGIN_SRC text
+FROM ubuntu:16.04
+VOLUME /src
+CMD ["/bin/bash"]
+   #+END_SRC
+
+   Note: [[https://hub.docker.com/_/ubuntu/][here]] you can see the available tags for the =ubuntu= image (but search for other images as well)
+
+   and run
+   + =docker build -t demo .= (tag demo)
+   + =docker run -it demo=
+
+
+
+** Docker with arch+aur
+   #+BEGIN_SRC text
+FROM base/archlinux
+VOLUME /src
+WORKDIR /src
+CMD ["/bin/bash"]
+   #+END_SRC
+
+   + cp /etc/pacman.conf /etc/pacman.conf.bak
+   + (echo '#AUR support'; echo '[archlinuxfr]'; echo 'SigLevel = Never'; echo 'Server = http://repo.archlinux.fr/x86_64'; echo; cat /etc/pacman.conf.bak) > /etc/pacman.conf
+   + pacman -Sy yaourt
+   + yaourt -Sy audiowaveform --noconfirm
+	 #+BEGIN_SRC text
+Running makepkg as root is not allowed as it can cause permanent,
+catastrophic damage to your system.
+	 #+END_SRC
+
+	 
+
+* Redis
+  #+BEGIN_SRC sh
+sudo add-apt-repository -y ppa:chris-lea/redis-server
+sudo apt-get update
+sudo apt-get install redis-client
+  #+END_SRC
 
 * Creating our waveform peaks
   BBC to the rescue! They have the wonderful [[https://github.com/bbc/audiowaveform][audiowaveform]] repository and program
@@ -51,4 +125,13 @@ sudo add-apt-repository ppa:chris-needham/ppa
 sudo apt-get update
 sudo apt-get install audiowaveform
    #+END_SRC
+   well, not working 
 
+   + apt-get update
+   + apt-get install software-properties-common
+   + add-apt-repository ppa:chris-needham/ppa
+   + apt-get update
+   + apt-get install audiowaveform
+
+   docker run -it -v /vagrant/data/audiowaveform-ubuntu/src:/src demo2
+   + audiowaveform -i speech1.wav -o speech1.dat
