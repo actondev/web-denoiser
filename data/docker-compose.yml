@@ -14,6 +14,14 @@ services:
       - mynet
     ports:
       - 6379:6379
+  front:
+    build: ./front
+    depends_on:
+      - redis_db
+    networks:
+      - mynet
+    volumes:
+      - ./shared:/shared
 
 
 networks:
