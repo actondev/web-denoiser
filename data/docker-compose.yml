@@ -1,0 +1,21 @@
+version: '3.2'
+services:
+  audiowaveform:
+    build: ./audiowaveform
+    depends_on:
+      - redis_db
+    networks:
+      - mynet
+    volumes:
+      - ./shared:/shared
+  redis_db:
+    image: "redis:alpine"
+    networks:
+      - mynet
+    ports:
+      - 6379:6379
+
+
+networks:
+  mynet:
+    driver: bridge

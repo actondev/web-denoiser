@@ -18,7 +18,7 @@ WORKDIR /code
 
 RUN npm install
 
-VOLUME /share
+VOLUME /shared
 
 # CMD ["/bin/bash"]
 # CMD ["tail", "-f", "/etc/hosts"]
