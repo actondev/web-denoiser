@@ -6,13 +6,9 @@ RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - && \
     apt-get install -y nodejs
 
-VOLUME /code
-COPY package.json /code
 WORKDIR /code
-
+COPY package.json /code/
 RUN npm install
 
-VOLUME /shared
-
-CMD ["tail", "-f", "/etc/hosts"]
-# CMD ["npm", "start"]
+# CMD ["tail", "-f", "/etc/hosts"]
+CMD ["npm", "start"]

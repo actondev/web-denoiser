@@ -20,9 +20,12 @@ services:
       - redis_db
     networks:
       - mynet
+    ports:
+      - 8080:8080
     volumes:
       - ./shared:/shared
-
+      - ./front:/code
+      - /code/node_modules
 
 networks:
   mynet:

@@ -9,12 +9,12 @@ publisher.publish("front:log", "hi");
 
 app.get('/', function (req, res, next) {
   try {
-    res.send(hi)
+    res.send("hi")
   } catch (e) {
     next(e)
   }
 })
 
-app.listen(process.env.PORT || 3000, function () {
-  console.log('Listening on http://localhost:' + (process.env.PORT || 3000))
+app.listen(process.env.PORT || 8080, function () {
+  console.log('Listening on http://localhost:' + (process.env.PORT || 8080))
 })
