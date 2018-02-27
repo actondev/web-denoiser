@@ -107,6 +107,39 @@ catastrophic damage to your system.
 
 	 
 
+** Docker + npm install
+
+*** Copying method
+	One simple solution is what is used in the =audiowaveform= microser vice
+	#+BEGIN_SRC text
+COPY . /code
+WORKDIR /code
+
+RUN npm install
+	#+END_SRC
+	This will copy the source code in the docker machine, and perform the =npm install= there.
+	No volume is used for the code. The ideal solution (in my opinion) to mount the code as a volume, and from inside the docker machine be able to run npm install..
+
+*** TODO Volume method
+	see [[https://stackoverflow.com/questions/30043872/docker-compose-node-modules-not-present-in-a-volume-after-npm-install-succeeds][here]]
+	so, another method would be to
+	#+BEGIN_SRC text
+WORKDIR /code
+COPY package.json /code/
+RUN npm install
+	#+END_SRC
+	and, in the =docker-compose.yml= have
+	#+BEGIN_SRC text
+  front:
+    build: ./front
+    volumes:
+      - ./front:/code
+      - /code/node_modules
+	#+END_SRC
+	which will create a data volume to store the =node_modules= content (which can be cached as well I suppose).
+	*Note* however that the =node_modules= won't be visible in the host machine
+
+	
 * Redis
   #+BEGIN_SRC sh
 sudo add-apt-repository -y ppa:chris-lea/redis-server
