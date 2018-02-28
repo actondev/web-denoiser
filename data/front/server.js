@@ -16,6 +16,15 @@ app.get('/', function (req, res, next) {
   }
 })
 
+app.post('/', function (req, res, next) {
+  try {
+    console.log(req);
+    res.send("ok");
+  } catch (e) {
+    next(e)
+  }
+})
+
 app.use(function (req, res, next) {
   var filename = path.basename(req.url);
   var extension = path.extname(filename);

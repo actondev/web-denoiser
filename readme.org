@@ -168,3 +168,28 @@ sudo apt-get install audiowaveform
 
    docker run -it -v /vagrant/data/audiowaveform-ubuntu/src:/src demo2
    + audiowaveform -i speech1.wav -o speech1.dat
+
+* Vue
+  [[https://vuejsdevelopers.com/2017/09/24/vue-js-single-file-javascript-components/][that]] was useful for getting started actually with sinfle file components
+
+* Debugging node
+  let's forward the port 5858 of the node, and
+  + sudo docker exec -it data_front_1 /bin/bash
+	+ node --inspect-brk=0.0.0.0:5858 server.js
+
+  and on vs code
+  #+BEGIN_SRC javascript
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Node front docker",
+      "address": "192.168.33.10",
+      "port": 5858,
+      "localRoot": "${workspaceFolder}/data/front",
+      "remoteRoot": "/code/",
+      "restart": false,
+      "sourceMaps": false,
+    },
+  #+END_SRC
+
+  Note: the remote root is the path on the docker instance (not vagrant)

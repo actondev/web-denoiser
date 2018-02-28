@@ -22,6 +22,7 @@ services:
       - mynet
     ports:
       - 8080:8080
+      - 5858:5858
     volumes:
       - ./shared:/shared
       - ./front:/code
