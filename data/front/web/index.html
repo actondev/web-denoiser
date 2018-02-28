@@ -13,14 +13,23 @@
   <form class="box" method="post" action="" enctype="multipart/form-data">
     <div class="box__input">
       <input class="box__file" type="file" name="files[]" id="file" data-multiple-caption="{count} files selected" multiple />
-      <label for="file"><strong>Choose a file</strong><span class="box__dragndrop"> or drag it here</span>.</label>
+      <label for="file">
+        <strong>Choose a file</strong>
+        <span class="box__dragndrop"> or drag it here</span>.</label>
       <button class="box__button" type="submit">Upload</button>
     </div>
     <div class="box__uploading">Uploading&hellip;</div>
     <div class="box__success">Done!</div>
-    <div class="box__error">Error! <span></span>.</div>
+    <div class="box__error">Error!
+      <span></span>.</div>
   </form>
-  
+
+  <ul id="messages"></ul>
+  <form action="" id="form-message">
+    <input id="m" autocomplete="off" />
+    <button>Send</button>
+  </form>
+
 
   <div id="app">
     <waveform ref="source"></waveform>
@@ -38,10 +47,40 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peaks.js/0.9.8/peaks.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="/vendor/waveform-data.js"></script>
   <script type="module" src="/component.js"></script>
   <script type="module" src="/app.js"></script>
   <script>
+    var socket;
+    socket = io();
+
+    socket.on("connect", function () {
+      console.log("connect")
+    })
+
+    $(function () {
+      console.log(socket.io.engine.id)
+
+      $('#form-message').submit(function () {
+        socket.emit('chat message', $('#m').val());
+        $('#m').val('');
+        return false;
+      });
+
+      socket.on('chat message', function (msg) {
+        console.log("on chat message");
+        $('#messages').append($('<li> PUBLIC').text(msg));
+      });
+
+      socket.on('message', function (message) {
+        console.log("message:" + message);
+      });
+    });
+
+
+
     var waveform;
     var waveformResponse;
     const xhr = new XMLHttpRequest();
