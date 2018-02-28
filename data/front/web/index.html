@@ -9,8 +9,13 @@
 <body>
   <h1>Web denoiser</h1>
 
+  <div id="app">
+    <single-file-component></single-file-component>
+  </div>
+
+
   <audio controls=controls>
-    <source src="/public/TOL_6min_720p_download.mp3" type="audio/mp3"> Your browser does not support the audio element.
+    <source src="/public/speech1.wav">
   </audio>
 
   <canvas id="canvas" width="450" height="275">
@@ -18,7 +23,10 @@
   </canvas>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peaks.js/0.9.8/peaks.js"></script>
-  <script src="/waveform-data.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="/vendor/waveform-data.js"></script>
+  <script type="module" src="/component.js"></script>
+  <script type="module" src="/app.js"></script>
   <script>
     var waveform;
     const xhr = new XMLHttpRequest();

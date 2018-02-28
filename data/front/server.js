@@ -26,6 +26,7 @@ app.use(function (req, res, next) {
 
 app.use('/public', express.static('/shared'))
 app.use('/', express.static(path.join(__dirname, 'web')))
+app.use('/vendor', express.static(path.join(__dirname, 'vendor')))
 
 app.listen(process.env.PORT || 8080, function () {
   console.log('Listening on http://localhost:' + (process.env.PORT || 8080))
