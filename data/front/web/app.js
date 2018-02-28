@@ -1,8 +1,9 @@
 import SingleFileComponent from './component.js';
 
-new Vue({
+Vue.config.devtools = true
+window.app = new Vue({
   el: '#app',
   components: {
-    SingleFileComponent
+    'waveform': SingleFileComponent
   }
 });
