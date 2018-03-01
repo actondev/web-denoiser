@@ -22,14 +22,16 @@ $form.on('drag dragstart dragend dragover dragenter dragleave drop', function (e
     $form.removeClass('is-dragover');
   })
   .on('drop', function (e) {
+    console.log("drop")
     droppedFiles = e.originalEvent.dataTransfer.files;
     $form.submit()
   });
 
 $form.on('submit', function (e) {
+  console.log("submit");
   e.preventDefault();
 
-  if ($form.hasClass('is-uploading')) return false;
+  console.log("not uploading")
 
   $form.addClass('is-uploading').removeClass('is-error');
 
@@ -41,8 +43,10 @@ $form.on('submit', function (e) {
     });
   }
 
+  console.log("lets do some ajax")
+
   $.ajax({
-    url: $form.attr('action'),
+    url: '/upload/'+window.clientId,
     type: $form.attr('method'),
     data: ajaxData,
     dataType: 'json',
