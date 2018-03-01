@@ -7,18 +7,32 @@ var redis = require("redis")
   , express = require("express")
   , app = express()
   , http = require('http').Server(app)
-  , io = require('socket.io')(http);
+  , io = require('socket.io')(http)
+  // handling multipart forms
+  , multer = require('multer')
+  , crypto = require('crypto')
+  , mime = require('mime')
+  ;
 
-console.log("hi man")
+const uuidv1 = require('uuid/v1');
 
-var clientId;
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, '/shared/')
+  },
+  filename: function (req, file, cb) {
+    crypto.pseudoRandomBytes(16, function (err, raw) {
+      cb(null, raw.toString('hex') + Date.now() + '.' + mime.extension(file.mimetype));
+    });
+  }
+});
 
-var sockets = [];
+var clientSockets = [];
 
 io.on('connection', function (socket) {
-  client = socket.client
-  clientId = socket.client.conn.id
-  sockets[clientId] = socket;
+  var client = socket.client
+  var clientId = socket.client.conn.id
+  clientSockets[clientId] = socket;
   publisher.hset('people', clientId, "client");
   socket.on('chat message', function (msg) {
     publisher.publish("font:messages", msg);
@@ -40,13 +54,32 @@ app.get('/', function (req, res, next) {
   }
 })
 
-app.post('/', function (req, res, next) {
-  try {
-    console.log(req);
-    res.send("ok");
-  } catch (e) {
-    next(e)
-  }
+app.post('/upload/:client', function (req, res) {
+  var clientId = req.params.client;
+  var socket = clientSockets[clientId];
+
+  // var savedPath = req.file.path;
+  console.log("uploaded from" + req.params.client);
+
+  // var upload = multer({ storage : storage}).any();
+  var upload = multer({ dest: '/shared/', storage: storage }).single('file');
+
+  upload(req, res, function (err) {
+    var temp = "";
+    if (err) {
+      console.log(err);
+      return res.end("Error uploading file.");
+    }
+    console.log("file: " + req.file.path);
+
+    var msg = {
+      "ref" : uuidv1(),
+      "path": req.file.path
+    }
+    publisher.publish("front:file-uploaded", JSON.stringify(msg) );
+
+    res.end("File has been uploaded");
+  });
 })
 
 app.use(function (req, res, next) {
