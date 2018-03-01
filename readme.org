@@ -193,3 +193,6 @@ sudo apt-get install audiowaveform
   #+END_SRC
 
   Note: the remote root is the path on the docker instance (not vagrant)
+
+* Drag+drop file uploading
+  see [[https://css-tricks.com/drag-and-drop-file-uploading/][here]]

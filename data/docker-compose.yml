@@ -8,6 +8,10 @@ services:
       - mynet
     volumes:
       - ./shared:/shared
+      - ./audiowaveform:/code
+      - /code/node_modules
+    ports:
+    - 5859:5858
   redis_db:
     image: "redis:alpine"
     networks:

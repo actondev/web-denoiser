@@ -1,23 +1,30 @@
 var redis = require("redis")
   , subscriber = redis.createClient(6379, "redis_db")
   , publisher = redis.createClient(6379, "redis_db")
+  // path operations (path.join)
+  , path = require("path")
+  // connectivity 
   , express = require("express")
   , app = express()
-  , path = require("path")
   , http = require('http').Server(app)
   , io = require('socket.io')(http);
 
 console.log("hi man")
 
-io.on('connection', function(socket){
+var clientId;
+
+var sockets = [];
+
+io.on('connection', function (socket) {
   client = socket.client
   clientId = socket.client.conn.id
-  publisher.hset('people', clientId, "client");  
-  socket.on('chat message', function(msg){
+  sockets[clientId] = socket;
+  publisher.hset('people', clientId, "client");
+  socket.on('chat message', function (msg) {
     publisher.publish("font:messages", msg);
     io.emit('chat message', msg);
     console.log('message: ' + msg);
-    socket.send("PRVT " + socket.client.conn.id)
+    socket.send("PRVT " + clientId)
   });
 
 
