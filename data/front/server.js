@@ -12,9 +12,28 @@ var redis = require("redis")
   , multer = require('multer')
   , crypto = require('crypto')
   , mime = require('mime')
+  , uuidv1 = require('uuid/v1')
   ;
 
-const uuidv1 = require('uuid/v1');
+// our subscriptions
+subscriber.subscribe("audiowaveform:done");
+// our sends
+const FRONT_AUDIOWAVEFORM_DONE = "front:audiowaveform-done";
+
+var clientSockets = [];
+var refClients = [];
+
+subscriber.on("message", function (channel, message) {
+  console.log("Message '" + message + "' on channel '" + channel + "' arrived!")
+  var msg = JSON.parse(message);
+
+  var clientId = refClients[msg.ref];
+  console.log("time to inform " + clientId);
+  var socket = clientSockets[clientId];
+  socket.emit(FRONT_AUDIOWAVEFORM_DONE, message);
+  socket.send("got it?")
+});
+
 
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -27,7 +46,7 @@ var storage = multer.diskStorage({
   }
 });
 
-var clientSockets = [];
+
 
 io.on('connection', function (socket) {
   var client = socket.client
@@ -72,11 +91,13 @@ app.post('/upload/:client', function (req, res) {
     }
     console.log("file: " + req.file.path);
 
+    var ref = uuidv1();
+    refClients[ref] = clientId;
     var msg = {
-      "ref" : uuidv1(),
+      "ref": ref,
       "path": req.file.path
     }
-    publisher.publish("front:file-uploaded", JSON.stringify(msg) );
+    publisher.publish("front:file-uploaded", JSON.stringify(msg));
 
     res.end("File has been uploaded");
   });
@@ -90,7 +111,7 @@ app.use(function (req, res, next) {
 });
 
 
-app.use('/public', express.static('/shared'))
+app.use('/shared', express.static('/shared'))
 app.use('/', express.static(path.join(__dirname, 'web')))
 app.use('/vendor', express.static(path.join(__dirname, 'vendor')))
 

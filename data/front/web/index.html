@@ -80,7 +80,13 @@
         console.log("message:" + message);
       });
 
-      window.app.$refs.source.setWaveformSource("/public/speech1.wav.dat")
+      socket.on('front:audiowaveform-done', function (message) {
+        console.log("front:audiowaveform-done:" + message);
+        var msg = JSON.parse(message);
+        window.app.$refs.source.setWaveformSource(msg.path)
+      });
+
+      window.app.$refs.source.setWaveformSource("/shared/speech1.wav.dat")
     });
 
 

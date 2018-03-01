@@ -28,9 +28,11 @@ export default {
       var canvas = document.getElementById(this.id),
         context = canvas.getContext('2d');
 
-
       const y = this.interpolateHeight(canvas.height);
       const ctx = canvas.getContext("2d");
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
       ctx.beginPath();
 
       // from 0 to 100
