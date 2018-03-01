@@ -29,7 +29,7 @@ export default {
         context = canvas.getContext('2d');
 
 
-      const y = interpolateHeight(canvas.height);
+      const y = this.interpolateHeight(canvas.height);
       const ctx = canvas.getContext("2d");
       ctx.beginPath();
 
@@ -38,11 +38,15 @@ export default {
 
       // then looping back from 100 to 0
       localWaveform.max.reverse().forEach((val, x) => {
-        ctx.lineTo((waveform.offset_length - x) + 0.5, y(val) + 0.5);
+        ctx.lineTo((localWaveform.offset_length - x) + 0.5, y(val) + 0.5);
       });
 
       ctx.closePath();
       ctx.stroke();
+    },
+    interpolateHeight(total_height){
+      const amplitude = 256;
+      return (size) => total_height - ((size + 128) * total_height) / amplitude;
     },
     setAudioSource(audioSource) {
       console.log("setting source to " + audioSource)
