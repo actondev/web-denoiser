@@ -7,8 +7,8 @@ RUN apt-get update && \
     apt-get install -y nodejs
 
 WORKDIR /code
-COPY package.json /code/
+COPY package*.json /code/
 RUN npm install
 
-# CMD ["tail", "-f", "/etc/hosts"]
-CMD ["npm", "start"]
+CMD ["tail", "-f", "/etc/hosts"]
+# CMD ["npm", "start"]
