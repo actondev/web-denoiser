@@ -1,7 +1,7 @@
 export default {
   template: `
     <div>
-     <canvas :id="id" width="300" height="100"></canvas>
+     <canvas :id="id" width="1024" height="256"></canvas>
      <p>{{ message }} {{id}}</p>
      <audio ref="player" controls=controls>
         <source v-bind:src="audioSource">
@@ -32,21 +32,30 @@ export default {
       const ctx = canvas.getContext("2d");
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+      var xFactor = canvas.width / localWaveform.min.length;
+
+      // min
+      ctx.moveTo(0, 0);
       ctx.beginPath();
-
-      // from 0 to 100
-      localWaveform.min.forEach((val, x) => ctx.lineTo(x + 0.5, y(val) + 0.5));
-
-      // then looping back from 100 to 0
-      localWaveform.max.reverse().forEach((val, x) => {
-        ctx.lineTo((localWaveform.offset_length - x) + 0.5, y(val) + 0.5);
+      localWaveform.min.forEach((val, x) => {
+        ctx.lineTo(x * xFactor, val * 0.6 + 128)
       });
-
-      ctx.closePath();
+      ctx.lineWidth = 1
+      ctx.strokeStyle = "rgba(100, 100, 200, 0.5)";
       ctx.stroke();
+
+      // max
+      ctx.moveTo(0, 0);
+      ctx.beginPath();
+      localWaveform.max.forEach((val, x) => {
+        ctx.lineTo(x * xFactor, val + 128)
+      });
+      ctx.lineWidth = 0.8
+      ctx.strokeStyle = "rgba(200, 10, 10, 1)";
+      ctx.stroke();
+
     },
-    interpolateHeight(total_height){
+    interpolateHeight(total_height) {
       const amplitude = 256;
       return (size) => total_height - ((size + 128) * total_height) / amplitude;
     },
