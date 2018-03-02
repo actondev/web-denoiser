@@ -17,8 +17,10 @@ var redis = require("redis")
 
 // our subscriptions
 subscriber.subscribe("audiowaveform:done");
-// our sends
+// our publishings
+const FRONT_FILE_UPLOADED = "front:file-uploaded";
 const FRONT_AUDIOWAVEFORM_DONE = "front:audiowaveform-done";
+// --
 
 var clientSockets = [];
 var refClients = [];
@@ -97,7 +99,7 @@ app.post('/upload/:client', function (req, res) {
       "ref": ref,
       "path": req.file.path
     }
-    publisher.publish("front:file-uploaded", JSON.stringify(msg));
+    publisher.publish(FRONT_FILE_UPLOADED, JSON.stringify(msg));
 
     res.end("File has been uploaded");
   });
