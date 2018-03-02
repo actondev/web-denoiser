@@ -8,13 +8,29 @@ services:
       - mynet
     volumes:
       - ./shared:/shared
+      - ./audiowaveform:/code
+      - /code/node_modules
+    ports:
+    - 5859:5858
   redis_db:
     image: "redis:alpine"
     networks:
       - mynet
     ports:
       - 6379:6379
-
+  front:
+    build: ./front
+    depends_on:
+      - redis_db
+    networks:
+      - mynet
+    ports:
+      - 8080:8080
+      - 5858:5858
+    volumes:
+      - ./shared:/shared
+      - ./front:/code
+      - /code/node_modules
 
 networks:
   mynet:
