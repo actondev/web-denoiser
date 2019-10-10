@@ -1,0 +1,17 @@
+{
+  "name": "denoiser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "redis": "^2.8.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "debug": "node --inspect=0.0.0.0:5858 server.js"
+  },
+  "author": "",
+  "license": "ISC"
+}

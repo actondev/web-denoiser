@@ -1,0 +1,35 @@
+image: ubuntu
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+before_script:
+  ##
+  ## Install ssh-agent if not already installed, it is required by Docker.
+  ## (change apt-get to yum if you use an RPM-based image)
+  ##
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+
+  ##
+  ## Run ssh-agent (inside the build environment)
+  ##
+  - eval $(ssh-agent -s)
+
+  ##
+  ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+  ## We're using tr to fix line endings which makes ed25519 keys work
+  ## without extra base64 encoding.
+  ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+  ##
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+
+
+# currently let's do it like that :)
+deploy_scp:
+  only:
+  - dev
+  script:
+    - echo greetings from gitlab ci
+    - cd data
+    - scp -o stricthostkeychecking=no -r . "$REMOTE":~/denoiser
+    - ssh $REMOTE "cd denoiser; chmod +x *.sh; chmod +x */*.sh; ./bootstrap.sh"

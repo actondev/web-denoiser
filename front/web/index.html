@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Web denoiser demo</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" rel="stylesheet" type="text/css">
+  <link rel="icon" href="favicon.png" type="image/x-icon">
+  <link href="https://unpkg.com/quasar-framework@^0.17.0/dist/umd/quasar.mat.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <div id="app">
+    <microservices-monitor ref="microservicesMonitor"></microservices-monitor>
+    <q-layout>
+      <q-toolbar>
+        <q-toolbar-title>
+          Web denoiser
+        </q-toolbar-title>
+      </q-toolbar>
+      <div class="q-pa-sm"></div>
+      <h3 class='q-heading text-center'>
+        A wavelet denoiser with a touch of microservices.
+      </h3>
+      <!-- <div class='row justify-center gutter-md'>
+        <div class='col-3'>
+          <q-card>
+            <q-card-title class='text-center'>
+              front
+            </q-card-title>
+            <q-card-separator></q-card-separator>
+            <q-card-main>
+              <ul>
+                <li>Web sockets</li>
+              </ul>
+            </q-card-main>
+          </q-card>
+        </div>
+        <div class='col-3'>
+          <q-card>
+            <q-card-title class='text-center'>
+              denoiser
+            </q-card-title>
+            <q-card-separator></q-card-separator>
+            <q-card-main>
+              <ul>
+                <li>Doing all the work</li>
+              </ul>
+            </q-card-main>
+          </q-card>
+        </div>
+        <div class='col-3'>
+          <q-card>
+            <q-card-title class='text-center'>
+              audiowaveform
+            </q-card-title>
+            <q-card-separator></q-card-separator>
+            <q-card-main>
+              <ul>
+                <li>Showing the peaks</li>
+              </ul>
+            </q-card-main>
+          </q-card>
+        </div>
+      </div> -->
+      <div class="q-pa-sm"></div>
+      <div>
+        <q-stepper ref="stepper" vertical>
+          <q-step name="upload" title="Upload a file" subtitle="Upload the file you wish to denoise">
+            <q-uploader ref="uploader" url="" :url-factory="getUploadUrl" hide-upload-button @add="fileAdded" @uploaded="uploadFinish" />
+          </q-step>
+          <q-step title="Denoise" name="denoise" subtitle="Set the denoiser options and.. have fun :)">
+            <audio-with-waveform :can-time-select=true @timeselection="setDenoiseTimeSelection" ref="original"></audio-with-waveform>
+            <denoiser-options :denoiser-time-selection="denoiserTimeSelection" @clearnoiseregion="clearDenoiserTimeSelection"></denoiser-options>
+            <audio-with-waveform :can-time-select=false ref="denoised"></audio-with-waveform>
+          </q-step>
+        </q-stepper>
+      </div>
+    </q-layout>
+  </div>
+  <!-- !app -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/peaks.js/0.9.8/peaks.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="/vendor/waveform-data.js"></script>
+  <script src="/form.js"></script>
+  <script src="/dist/main.js"></script>
+  <script src="/sockets.js"></script>
+
+</body>
+
+</html>

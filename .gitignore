@@ -2,4 +2,7 @@
 *.log
 
 **/node_modules
-**/package-lock.json
+/shared/
+
+# emacs temp
+*~

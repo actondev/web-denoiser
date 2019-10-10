@@ -1,0 +1,41 @@
+{
+  "name": "code",
+  "version": "1.0.0",
+  "main": "server.js",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "express": "^4.16.2",
+    "lodash": "^4.17.5",
+    "multer": "^1.3.0",
+    "path": "^0.12.7",
+    "quasar-framework": "^0.15.10",
+    "redis": "^2.8.0",
+    "socket.io": "^2.0.4",
+    "uuid": "^3.2.1",
+    "vue": "^2.5.16",
+    "webpack": "4.19.1",
+    "webpack-cli": "2.1.4"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.4",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "css-loader": "^0.28.11",
+    "style-loader": "^0.20.3",
+    "vue-loader": "^14.2.1",
+    "vue-template-compiler": "^2.5.16",
+    "webpack-dev-middleware": "^3.1.3",
+    "webpack-hot-middleware": "^2.21.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "debug": "node --inspect=0.0.0.0:5858 server.js",
+    "watch": "webpack --mode development --watch",
+    "build": "webpack --mode production --config ./webpack.production.config.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

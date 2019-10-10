@@ -1,0 +1,266 @@
+* Getting started
+  We're gonna use =Vagrant= for our dev machine (standarize our dev environment) in which we will
+  + [ ] instal nginx
+  + [ ] install docker
+  + [ ] install git
+
+** Creating the vagrant box
+   Cause the hardest part is getting started (how do you write the =vagrantfile= ? :P) we run the following
+   #+BEGIN_SRC sh
+  vagrant init ubuntu/xenial64
+   #+END_SRC
+   This will create a template vagrantfile with =Ubuntu 16.04 LTS=
+
+   By adjusting the comments etc, we ended up with
+   #+BEGIN_SRC ruby
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/xenial64"
+  config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+  config.vm.network "private_network", ip: "192.168.33.10"
+  config.vm.synced_folder "./data", "/vagrant_data"
+  config.vm.provider "virtualbox" do |vb|
+  config.vm.provision "shell", inline: <<-SHELL
+    apt-get update
+    apt-get install -y nginx
+  SHELL
+end
+
+   #+END_SRC
+
+   Now, in our host machine we can open in browser =http://192.168.33.10/= and see the wonderful =Welcome to nginx= page :)
+
+* Docker
+  The goal is to put every microservice inside a docker  container.
+  Our microservices will be:
+  + Front: serving the webpage and managing the file upload
+  + redis ? : for managing the communication of the waveforms
+  + Waveform peaks generator
+  + Denoisier
+
+** Installing docker
+  As seen [[https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04][here]]
+  #+BEGIN_SRC sh
+# add the GPG key for the official Docker repository to the system
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+# Make sure you are about to install from the Docker repo instead of the default Ubuntu 16.04 repo:
+apt-cache policy docker-ce
+# install it
+sudo apt-get install -y docker-ce
+
+  #+END_SRC
+
+  extra: run docker commands without sudo
+  #+BEGIN_SRC sh
+sudo usermod -aG docker ${USER}
+su - ${USER}
+id -nG
+  #+END_SRC
+
+** installing docker-compose
+   #+BEGIN_SRC sh
+sudo curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+   #+END_SRC
+
+
+
+
+** Playing with docker
+   to end up with proper =RUN= instructions, first u have to test them, right?
+   SO start with a simple =Dockerfile=
+   #+BEGIN_SRC text
+FROM ubuntu:16.04
+VOLUME /src
+CMD ["/bin/bash"]
+   #+END_SRC
+
+   Note: [[https://hub.docker.com/_/ubuntu/][here]] you can see the available tags for the =ubuntu= image (but search for other images as well)
+
+   and run
+   + =docker build -t demo .= (tag demo)
+   + =docker run -it demo=
+
+
+
+** Docker with arch+aur
+   #+BEGIN_SRC text
+FROM base/archlinux
+VOLUME /src
+WORKDIR /src
+CMD ["/bin/bash"]
+   #+END_SRC
+
+   + cp /etc/pacman.conf /etc/pacman.conf.bak
+   + (echo '#AUR support'; echo '[archlinuxfr]'; echo 'SigLevel = Never'; echo 'Server = http://repo.archlinux.fr/x86_64'; echo; cat /etc/pacman.conf.bak) > /etc/pacman.conf
+   + pacman -Sy yaourt
+   + yaourt -Sy audiowaveform --noconfirm
+	 #+BEGIN_SRC text
+Running makepkg as root is not allowed as it can cause permanent,
+catastrophic damage to your system.
+	 #+END_SRC
+
+	 
+
+** Docker + npm install
+
+*** Copying method
+	One simple solution is what is used in the =audiowaveform= microser vice
+	#+BEGIN_SRC text
+COPY . /code
+WORKDIR /code
+
+RUN npm install
+	#+END_SRC
+	This will copy the source code in the docker machine, and perform the =npm install= there.
+	No volume is used for the code. The ideal solution (in my opinion) to mount the code as a volume, and from inside the docker machine be able to run npm install..
+
+*** TODO Volume method
+	see [[https://stackoverflow.com/questions/30043872/docker-compose-node-modules-not-present-in-a-volume-after-npm-install-succeeds][here]]
+	so, another method would be to
+	#+BEGIN_SRC text
+WORKDIR /code
+COPY package.json /code/
+RUN npm install
+	#+END_SRC
+	and, in the =docker-compose.yml= have
+	#+BEGIN_SRC text
+  front:
+    build: ./front
+    volumes:
+      - ./front:/code
+      - /code/node_modules
+	#+END_SRC
+	which will create a data volume to store the =node_modules= content (which can be cached as well I suppose).
+	*Note* however that the =node_modules= won't be visible in the host machine
+
+	
+* Redis
+  #+BEGIN_SRC sh
+sudo add-apt-repository -y ppa:chris-lea/redis-server
+sudo apt-get update
+sudo apt-get install redis-client
+  #+END_SRC
+
+* Creating our waveform peaks
+  BBC to the rescue! They have the wonderful [[https://github.com/bbc/audiowaveform][audiowaveform]] repository and program
+
+  
+** Installation
+   As they note on their github
+   #+BEGIN_SRC sh
+sudo add-apt-repository ppa:chris-needham/ppa
+sudo apt-get update
+sudo apt-get install audiowaveform
+   #+END_SRC
+   well, not working 
+
+   + apt-get update
+   + apt-get install software-properties-common
+   + add-apt-repository ppa:chris-needham/ppa
+   + apt-get update
+   + apt-get install audiowaveform
+
+   docker run -it -v /vagrant/data/audiowaveform-ubuntu/src:/src demo2
+   + audiowaveform -i speech1.wav -o speech1.dat
+
+* Vue
+  [[https://vuejsdevelopers.com/2017/09/24/vue-js-single-file-javascript-components/][that]] was useful for getting started actually with sinfle file components
+
+* Debugging node
+  let's forward the port 5858 of the node, and
+  + sudo docker exec -it data_front_1 /bin/bash
+	+ node --inspect-brk=0.0.0.0:5858 server.js
+
+  and on vs code
+  #+BEGIN_SRC javascript
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Node front docker",
+      "address": "192.168.33.10",
+      "port": 5858,
+      "localRoot": "${workspaceFolder}/data/front",
+      "remoteRoot": "/code/",
+      "restart": false,
+      "sourceMaps": false,
+    },
+  #+END_SRC
+
+  Note: the remote root is the path on the docker instance (not vagrant)
+
+* Drag+drop file uploading
+  see [[https://css-tricks.com/drag-and-drop-file-uploading/][here]]
+
+* Deploying
+  Created a machine in =Digital Ocean= using =ubuntu 16.04 (xenial)=
+
+** Installing docker
+   Followed the instructions from above about docker
+   #+BEGIN_SRC text
+root@ubuntu-docker-1803:~# docker-compose -v
+docker-compose version 1.19.0, build 9e633ef
+root@ubuntu-docker-1803:~# docker -v
+Docker version 18.03.0-ce, build 0520e24
+   #+END_SRC
+
+** SSH key in the remote machine
+   we have to create an ssh key in the repo, install git, clone our repo, docker-compose up.. and should work :)
+
+   + run =ssh-keygen= in the droplet
+   + add this key in gitlab
+	 + https://gitlab.com/actondev/denoiser-web/settings/repository
+	 + in the section =deploy keys=
+	 + make the access read only :)
+	 + adding this also in https://gitlab.com/actondev/auth-diplo-matlab/settings/repository (since it's a git submodule)
+
+** Gitlab CI
+   + https://codeburst.io/gitlab-build-and-push-to-a-server-via-ssh-6d27ca1bf7b4
+   + https://docs.gitlab.com/ee/ci/ssh_keys/#how-it-works
+
+
+** Debugging the scp commands + windows
+   Using cygwin + ssh, scp, rsync
+   + https://superuser.com/a/1255314
+	 #+BEGIN_SRC text
+Change the the line in the file  /etc/nsswitch.conf to:
+
+db_home: windows cygwin desc
+	 #+END_SRC
+
+   and maybe you need to run
+   + =mkpasswd -l -p "$(cyg^Cth -H)" > /etc/passwd=
+   as well
+
+*** scp for cygwin
+	1. download the zip from https://github.com/PowerShell/Win32-OpenSSH/releases
+	2. extract the =scp.exe= and =libcrypto.dll= to a directory that exists in the PATH
+* COMMENT log
+** <2018-03-26 Mon> docker issues
+  .. well.. not everything is cool in docker
+  #+BEGIN_SRC text
+vagrant@vagrant-ubuntu-trusty-64:/data$ sudo docker-compose logs
+Attaching to data_front_1, data_denoiser_1, data_audiowaveform_1, data_redis_db_1
+front_1          | standard_init_linux.go:195: exec user process caused "no such file or directory"
+denoiser_1       | standard_init_linux.go:195: exec user process caused "no such file or directory"
+audiowaveform_1  | standard_init_linux.go:195: exec user process caused "no such file or directory"
+redis_db_1       | 1:C 26 Mar 20:16:58.846 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+redis_db_1       | 1:C 26 Mar 20:16:58.847 # Redis version=4.0.8, bits=64, commit=00000000, modified=0, pid=1, just started
+redis_db_1       | 1:C 26 Mar 20:16:58.847 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
+redis_db_1       | 1:M 26 Mar 20:16:58.848 * Running mode=standalone, port=6379.
+redis_db_1       | 1:M 26 Mar 20:16:58.851 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+redis_db_1       | 1:M 26 Mar 20:16:58.851 # Server initialized
+redis_db_1       | 1:M 26 Mar 20:16:58.851 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+redis_db_1       | 1:M 26 Mar 20:16:58.851 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+redis_db_1       | 1:M 26 Mar 20:16:58.852 * Ready to accept connections
+vagrant@vagrant-ubuntu-trusty-64:/data$
+  #+END_SRC
+
+  .. well the problem was cause of the line endings in the =entrypoint.sh= files.. =LF= was replaced by =CR LF= by git
+*** Solution
+	git config --global core.autocrlf false

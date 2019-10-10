@@ -1,0 +1,68 @@
+version: '3.2'
+services:
+  audiowaveform:
+    build: ./audiowaveform
+    restart: on-failure
+    hostname: audiowaveform
+    env_file:
+      - .env
+      - audiowaveform.env
+    depends_on:
+      - redis
+    networks:
+      - mynet
+    volumes:
+      - ./shared:/shared
+      - ./audiowaveform:/code
+      - /code/node_modules
+    ports:
+    - 5859:5858
+  denoiser:
+    build: ./denoiser
+    restart: on-failure
+    hostname: denoiser
+    env_file:
+      - .env
+      - denoiser.env
+    depends_on:
+      - redis
+    networks:
+      - mynet
+    volumes:
+      - ./shared:/shared
+      - ./denoiser:/code
+      - /code/node_modules
+    ports:
+    - 5860:5858
+  front:
+    build: ./front
+    restart: on-failure
+    hostname: front
+    env_file:
+      - .env
+      - front.env
+    depends_on:
+      - redis
+    networks:
+      - mynet
+    ports:
+      - "${PORT}:${PORT}"
+      - 5858:5858
+    volumes:
+      - ./shared:/shared
+      - ./front:/code
+      - /code/node_modules
+  redis:
+    image: "redis:alpine"
+    restart: on-failure
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    user: '1000:1000'
+    networks:
+      - mynet
+    ports:
+      - 6379:6379
+networks:
+  mynet:
+    driver: bridge
