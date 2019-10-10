@@ -1,6 +1,10 @@
 #+PROPERTY: header-args :exports both
 * Web denoiser
-  This is a web application interfacing with the [[https://github.com/actonDev/wavelet-denoiser][wavelet-denoiser]] command line application.
+  This is a web application interfacing with the [[https://github.com/actonDev/wavelet-denoiser][wavelet-denoiser]] command line application. Developed as a part of my thesis for the =Electrical & Computer Engineering= diploma from =Aristotle University of Thessaloniki=.
+
+  #+BEGIN_VERSE
+  Disclaimer: the docker-compose build command will download the whole internet. Also plenty of docker images use outdated ubuntu versions, but I reaalllyy don't want to touch thing again. Here only for demonstration pursposes :)
+  #+END_VERSE
 
   Demo usage
   [[file:doc/web-denoiser01.gif]]
@@ -8,6 +12,9 @@
   To use it you need to
   + install docker/docker-compose
   + clone the project WITH the submodules
+    #+BEGIN_SRC sh
+git clone --recurse-submodules https://github.com/actonDev/web-denoiser.git
+    #+END_SRC
   
   The following installation/building instructions have in mind a system running =Ubuntu 18.04=.
 
@@ -26,8 +33,6 @@
 sudo apt install docker.io
 # starting the service
 sudo service docker start
-# enabling the service (on startup)
-sudo service docker enable
 # checking the service
 sudo service docker status
    #+END_SRC
@@ -67,7 +72,7 @@ docker-compose -v
 
 ** Building
    
-  First, make sure you have the necessary git submodule present
+  First, make sure you have the necessary git submodule present (in case you didn't clone with the =--recurse-submodules= flag)
   #+BEGIN_SRC sh
 git submodule init && git submodule update
 # making sure the denoiser submodle files are there
