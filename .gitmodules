@@ -1,0 +1,4 @@
+[submodule "denoiser/wavelet-denoiser"]
+	path = denoiser/wavelet-denoiser
+	url = ../wavelet-denoiser.git
+	branch = master 

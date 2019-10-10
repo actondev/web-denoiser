@@ -1,0 +1,105 @@
+* <2019-10-10 Thu> Installing docker/docker-compose
+  On ubuntu 18.04
+  #+BEGIN_SRC sh
+sudo apt install docker.io
+# starting the service
+sudo service docker start
+# enabling the service (on startup)
+sudo service docker enable
+# checking the service
+sudo service docker status
+  #+END_SRC
+
+  Checking docker version
+  #+BEGIN_SRC sh :results output
+docker -v
+  #+END_SRC
+
+  #+RESULTS:
+  : Docker version 18.09.7, build 2d0083d
+
+  For docker-compose
+  #+BEGIN_SRC sh
+sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+sudo chmod +x /usr/local/bin/docker-compose
+  #+END_SRC
+
+  Checking docker-compose version
+  #+BEGIN_SRC sh :results output
+docker-compose -v
+  #+END_SRC
+
+  #+RESULTS:
+  : docker-compose version 1.24.1, build 4667896b
+** testing docker
+   #+BEGIN_SRC sh
+sudo docker run hello-world
+   #+END_SRC
+* <2019-10-10 Thu> Reviewing the web-service etc
+
+  first, make sure you have the necessary git submodule
+  #+BEGIN_SRC sh
+git submodule init && git submodule update
+# making sure the denoiser submodle files are there
+ls denoiser/wavelet-denoiser
+  #+END_SRC
+
+  Then, building the service.. which should take a while
+  #+BEGIN_SRC sh
+sudo docker-compose build
+# and running
+sudo docker-compose up
+  #+END_SRC
+* COMMENT Dev notes/troubleshooting
+** <2019-10-10 Thu> error  in pip install 
+    Beginning with Matplotlib 3.1, Python 3.6 or above is required.
+    
+    This may be due to an out of date pip.
+    
+    Make sure you have pip >= 9.0.1.
+    
+    
+    ----------------------------------------
+Command "python setup.py egg_info" failed with error code 1 in /tmp/pip-build-uexvl_ee/matplotlib/
+You are using pip version 8.1.1, however version 19.2.3 is available.
+You should consider upgrading via the 'pip install --upgrade pip' command.
+ERROR: Service 'denoiser' failed to build: The command '/bin/sh -c pip3 install -r requirements.txt' returned a non-zero code: 1
+*** solution
+ *updated dockerfile to use ubuntu 18.04*
+** <2019-10-10 Thu> fmpeg
+   #+BEGIN_SRC sh
+# sudo docker run -it ubuntu
+sudo docker run -it ubuntu:18.04 bash
+apt update
+apt-cache search ffmpeg
+   #+END_SRC
+** <2019-10-10 Thu> debugging front service
+   + [X] https://github.com/webpack/webpack/issues/8082
+   That's the original entrypoint
+   [[file:front/entrypoint.sh]]
+    #+BEGIN_SRC sh
+sudo docker-compose run --entrypoint bash -p 0.0.0.0:8080:8080 front
+npm run build # fails..
+npm install
+   #+END_SRC
+
+   #+BEGIN_SRC sh :session *temp*
+ifconfig
+   #+END_SRC
+** Development in windows & linux (old note)
+   diff --git a/data/redis.conf b/data/redis.conf
+   old mode 100644
+   new mode 100755
+
+   with the =old mode= was getting the error
+   #+BEGIN_SRC text
+redis_1          | 1:C 05 Aug 17:13:50.492 # Fatal error, can't open config file '/usr/local/etc/redis/redis.conf'
+   #+END_SRC
+
+   trying
+   docker run -v $(pwd)/redis.conf:/usr/local/etc/redis/redis.conf --name myredis redis redis-server /usr/local/etc/redis/redis.conf
+
+   as seen [[https://github.com/docker-library/redis/issues/125#issuecomment-363193067][here]] it got solved with adding
+   + user: '1000:1000'
+   in the =docker-compose.yml=
